@@ -32,14 +32,14 @@ var startCloud = {
 }
 var cloud = {
     x: Math.random() * (width - 235),
-    y: width / 4,
+    y: width / 2,
     width: 235,
     height: 56
 }
 
 var secondCloud = {
     x:Math.random() * (width - 235),
-    y: width / 2,
+    y: width / 4,
     width: 235,
     height: 56
 }
@@ -73,7 +73,7 @@ function jump() {
     console.log(cloud.x)
     if(hero.y > limit && !goingDown){
         jumpingStatus = true
-        hero.y-=7;
+        hero.y-=7 ;
     } else {
     goingDown = true;
         hero.y +=7;
@@ -92,7 +92,7 @@ function jump() {
                 console.log(limit)
             }
             if((hero.x + 15 < secondCloud.x + secondCloud.width) && (hero.x + hero.width - 15  > secondCloud.x) && (hero.y + hero.height > secondCloud.y) && (hero.y + hero.height < secondCloud.y + secondCloud.height) )  {
-                limit = 100
+                limit = 0
                 goingDown = false
                 jumpingStatus = false
                 clearInterval(jumping)
@@ -171,12 +171,6 @@ function fall() {
     goingDown = true
     falling = setInterval(function() {
         hero.y +=1;
-        if((hero.y > jump.y) )  {
-            goingDown = false;
-            limit= 325
-            clearInterval(falling)
-        }
-
     },20)
 
 }
@@ -186,7 +180,7 @@ var update = function (modifier) {
     if(38 in keysDown) {
         console.log(hero.y)
         if(!jumpingStatus) {
-            jumping = setInterval(jump, 10)
+            jumping = setInterval(jump,10)
         }
     }
     if (37 in keysDown) { // Player holding left
