@@ -13,12 +13,12 @@ var falling
 var jumping
 
 var jumpSound = document.createElement("audio")
-jumpSound.src = "jump.mp3"
+jumpSound.src = "/sounds/jump.mp3"
 jumpSound.volume = 0.3
 
 var backgroundMusic = document.createElement("audio")
 backgroundMusic.volume = 0.3
-backgroundMusic.src = "mario.mp3"
+backgroundMusic.src = "/sounds/mario.mp3"
 backgroundMusic.play()
 
 class Player {
