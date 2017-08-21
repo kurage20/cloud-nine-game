@@ -1,6 +1,5 @@
 var canvas = document.getElementById("canvas")
 var ctx = canvas.getContext("2d");
-
 var width = canvas.width
 var height = canvas.height
 
@@ -33,9 +32,9 @@ class Player {
         }, this)
     }
     fall() {
-        fallingStatus = true
+        this.fallingStatus = true
         falling = setInterval(function () {
-            this.y += 6;
+            this.y += 3;
         }, 10)
     }
 }
@@ -49,16 +48,21 @@ Player.prototype.limit = 425
 Player.prototype.jump = function () {
 
     if (this.y > this.limit && !this.goingDown) {
+        onCloud = false
         this.jumpingStatus = true
-        this.y -= 7;
+        this.y -= 3;
         jumpSound.play()
-        console.log(this.y + this.height)
-        console.log(clouds[0].y)
+
+        clouds.forEach(function(cloud) {
+            if ((player.x + 15 < cloud.x + cloud.width) && (player.x + player.width - 15 > cloud.x) && (player.y + player.height === cloud.y + cloud.height )) {
+                player.goingDown = true        
+            }
+        })
         
     } else {
         if (!this.fallingStatus) {
             this.goingDown = true;
-            this.y += 7;
+            this.y += 3;
         }
 
         clouds.forEach(function (cloud) {
@@ -71,10 +75,10 @@ Player.prototype.jump = function () {
                 this.jumpingStatus = false
                 this.onCloud = true
                 clearInterval(jumping)
-                if (this.y < 550 && this.y > 300) {
+                if (this.y < 550 && this.y > 400) {
                     this.limit = 300
                 }
-                if (this.y < 400 && this.y > 200) {
+                if (this.y < 400 && this.y > 300) {
                     this.limit = 200
                 }
                 if (this.y < 300 && this.y > 0) {
@@ -88,39 +92,36 @@ Player.prototype.jump = function () {
 }
 
 class Cloud {
-    constructor(x, y, width, height, floatSpeed) {
+    constructor(x, y, dir, floatSpeed) {
         this.x = x
         this.y = y
-        this.width = width
-        this.height = height
+        this.dir = dir
         this.floatSpeed = floatSpeed
+        this.width = 235
+        this.height = 56
+        this.scored = false
     }
 }
 
-Cloud.prototype.scored = false
-Cloud.prototype.dir = "right"
 
-var player = new Player(500, 700, 275, 80, 100, "", 2)
-var jump_y = player.y
+
+var player = new Player(500, 700, 300, 80, 100, "", 2)
 
 var randomX = function () {
     return Math.random() * (width - 235)
 }
 
-var cloudOne = new Cloud(randomX(), 600, 235, 56, 2)
-var cloudTwoImage = new Cloud(randomX(), 200, 235, 56, 2.5)
-var cloudThree= new Cloud(randomX(), 400, 235, 56, 3)
+var cloudOne = new Cloud(randomX(), 600, "left", 2)
+var cloudTwoImage = new Cloud(randomX(), 200, "right", 2.5)
+var cloudThree= new Cloud(randomX(), 400, "left", 3)
 
 clouds.push(cloudOne, cloudTwoImage, cloudThree)
 
 
 var timerTick = setInterval(function () {
-    timer--
-    if (timer === 0) {
-        clearInterval(timerTick)
-    }
-
+    timer--  
 }, 1000)
+
 
 var bgImage = new Image();
 var playerImage = new Image();
@@ -129,12 +130,13 @@ var scoreImage = new Image()
 var cloudOneImage = new Image()
 var cloudTwoImage = new Image()
 var cloudThreeImage = new Image()
+var mute = new Image()
 
 var cloudImages = ["img/cloud1.png", "img/cloud2.png", "img/cloud3.png"]
 var randomCloudImage = function () {
     return cloudImages[Math.floor(Math.random() * cloudImages.length)]
 }
-
+mute.src = "img/mute.png"
 bgImage.src = "img/background.png";
 playerImage.src = "img/JumpJumpBoy.png";
 timerImage.src = "img/clock.png"
@@ -183,6 +185,7 @@ var render = function () {
     ctx.textBaseline = "top";
     ctx.fillText(score, 855, 20);
 
+
  
 };
 
@@ -192,7 +195,7 @@ var update = function (modifier) {
         if (!player.jumpingStatus) {
             jumping = setInterval(function () {
                 player.jump()
-            }, 10)
+            }, 1)
         }
     }
     if (37 in keysDown) {
@@ -214,70 +217,65 @@ var update = function (modifier) {
         move(cloud)
     })
 
+    if(timer === 0 || player.y - player.height > height) {
+        resetGame()
+    }
+
 };
 
 function checkPosition() {
     clouds.forEach(function (cloud) {
-        if ((player.x + 15 < cloud.x + cloud.width) && (player.x + player.width - 15 > cloud.x) && (player.y - player.height === cloud.y - cloud.height)) {
-            goingDown = true
-            jumpingStatus = true
-        }
         if (!player.goingDown && player.jumpingStatus && player.y < height / 2) {
-            cloud.y += 16
+            cloud.y += 15
         } else if (!player.goingDown && player.jumpingStatus && player.y < height / 3) {
             cloud.y += 20
         }
 
         if (cloud.y > height) {
             cloud.y = cloud.y - height + 200
-            cloud.x = Math.floor(Math.random() * 900) + -100
+            cloud.x = Math.random() * (width - 235)
             cloud.floatSpeed += 0.5
             cloud.scored = false
         }
-        if (player.goingDown && player.jumpingStatus && player.y < height / 2) {
+        if (player.goingDown && !player.jumpingStatus && player.y < height / 2) {
             if (player.onCloud) {
-                cloud.y -= 14
+                cloud.y -= 10
             }
 
         }
+
+        /*
+        if((cloud.y - player.y > 100 && cloud.y - player.y < 150) && player.x  > cloud.x + cloud.width / 1.2 ||(cloud.y - player.y > 100 && cloud.y - player.y < 150) && ( player.y < cloud.y && player.x + player.width < cloud.x && !player.jumpingStatus) ) {
+            goingDown = true
+            player.fall()       
+        }
+        */
+        if( player.fallingStatus &&(player.x + 15 < cloud.x + cloud.width) && (player.x + player.width - 15  > cloud.x) && (player.y + player.height + 3  > cloud.y) && (player.y + player.height < cloud.y + cloud.height) )  {
+            goingDown = false;
+            jumpingStatus = false
+            fallingStatus = false
+            clearInterval(falling)
+            onCloud = true
+        }
+
     })
-    /*
-    if(( (cloud.y - player.y > 99) && player.x  > cloud.x + cloud.width / 1.2) ||(cloud.y - player.y > 99 ) && ( player.y < cloud.y && player.x + player.width < cloud.x && !jumpingStatus) ) {
-        goingDown = true
-        fall()       
-    }
-        if(( (secondCloud.y - player.y === 98) && player.x  > secondCloud.x + secondCloud.width / 1.2) ||(secondCloud.y - player.y === 98) && ( player.y < secondCloud.y && player.x + player.width < secondCloud.x && !jumpingStatus) ) {
-        goingDown = true
-        fall()       
-    }
+    
+   
 
-    if( fallingStatus &&(player.x + 15 < cloud.x + cloud.width) && (player.x + player.width - 15  > cloud.x) && (player.y + player.height + 3  > cloud.y) && (player.y + player.height < cloud.y + cloud.height) )  {
-        goingDown = false;
-        limit= 200
-        jumpingStatus = false
-        fallingStatus = false
-        clearInterval(falling)
-        onCloud = true
-    }
-    if( fallingStatus && (player.x + 15 < cloudOne.x + cloudOne.width) && (player.x + player.width - 15  > cloudOne.x) && (player.y + player.height > cloudOne.y) && (player.y + player.height < cloudOne.y + cloudOne.height) )  {
-        limit = 325
-        goingDown = false
-        jumpingStatus = false
-        fallingStatus = false
-        clearInterval(falling)
-    }
-*/
 }
+function resetGame() {
+    clearInterval(jumping)
+    timer = 60
+    score = 0
+    player = new Player(500, 700, 275, 80, 100, "", 2)
 
-var main = function () {
-    var now = Date.now();
-    var delta = now - then;
-    update(delta / 1000);
-    render();
-    then = now;
-    requestAnimationFrame(main);
-
-};
+    var cloudOne = new Cloud(randomX(), 600, "left", 2)
+    var cloudTwoImage = new Cloud(randomX(), 200, "right", 2.5)
+    var cloudThree= new Cloud(randomX(), 400, "left", 3)
+    
+    clouds = []
+    clouds.push(cloudOne, cloudTwoImage, cloudThree)
+}
 
 //Move horizontally cloud or player
 function move(object) {
@@ -308,8 +306,18 @@ jumpSound.volume = 0.3
 
 var backgroundMusic = document.createElement("audio")
 backgroundMusic.volume = 0.3
-backgroundMusic.src = "sound/mario.mp3"
+backgroundMusic.src = "sound/ape2.mp3"
 backgroundMusic.play()
+
+var main = function () {
+    var now = Date.now();
+    var delta = now - then;
+    update(delta / 1000);
+    render();
+    then = now;
+    requestAnimationFrame(main);
+
+};
 
 var then = Date.now();
 main();
