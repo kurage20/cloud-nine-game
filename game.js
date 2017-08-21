@@ -34,8 +34,56 @@ class Player {
     fall() {
         this.fallingStatus = true
         falling = setInterval(function () {
-            this.y += 3;
+            this.y += 1;
         }, 10)
+    }
+    jump() {
+
+        if (this.y > this.limit && !this.goingDown) {
+            this.onCloud = false
+            this.jumpingStatus = true
+            this.y -= 3;
+            jumpSound.play()
+            console.log(this.y)
+
+            clouds.forEach(function (cloud) {
+                if ((this.x + 15 < cloud.x + cloud.width) && (this.x + this.width - 15 > cloud.x) && (this.y === cloud.y - cloud.height)) {
+                    this.y += 3
+                    this.goingDown = true
+                }
+            }, this)
+
+        } else {
+            if (!this.fallingStatus) {
+                this.goingDown = true;
+                this.y += 1.5;
+            }
+
+            clouds.forEach(function (cloud) {
+                
+                if ((this.x + 15 < cloud.x + cloud.width) && (this.x + this.width - 15 > cloud.x) && (this.y + this.height > cloud.y - 10) && (this.y + this.height < cloud.y + cloud.height - 10)) {
+                    if (!cloud.scored) {
+                        score++
+                        cloud.scored = true
+                    }
+                    this.goingDown = false;
+                    this.jumpingStatus = false
+                    this.onCloud = true
+                    clearInterval(jumping)
+                    if (this.y < 550 && this.y > 400) {
+                        this.limit = 300
+                    }
+                    if (this.y < 400 && this.y > 300) {
+                        this.limit = 200
+                    }
+                    if (this.y < 300 && this.y > 0) {
+                        this.limit = 100
+                    }
+
+                }
+
+            }, this)
+        }
     }
 }
 Player.prototype.onCloud = false
@@ -43,53 +91,6 @@ Player.prototype.jumpingStatus = false
 Player.prototype.goingDown = false
 Player.prototype.fallingStatus = false
 Player.prototype.limit = 425
-
-
-Player.prototype.jump = function () {
-
-    if (this.y > this.limit && !this.goingDown) {
-        onCloud = false
-        this.jumpingStatus = true
-        this.y -= 3;
-        jumpSound.play()
-
-        clouds.forEach(function(cloud) {
-            if ((player.x + 15 < cloud.x + cloud.width) && (player.x + player.width - 15 > cloud.x) && (player.y + player.height === cloud.y + cloud.height )) {
-                player.goingDown = true        
-            }
-        })
-        
-    } else {
-        if (!this.fallingStatus) {
-            this.goingDown = true;
-            this.y += 3;
-        }
-
-        clouds.forEach(function (cloud) {
-            if ((this.x + 15 < cloud.x + cloud.width) && (this.x + this.width - 15 > cloud.x) && (this.y + this.height > cloud.y - 20) && (this.y + this.height + 40 < cloud.y + cloud.height)) {
-                if(!cloud.scored) {
-                    score++
-                    cloud.scored = true
-                }
-                this.goingDown = false;
-                this.jumpingStatus = false
-                this.onCloud = true
-                clearInterval(jumping)
-                if (this.y < 550 && this.y > 400) {
-                    this.limit = 300
-                }
-                if (this.y < 400 && this.y > 300) {
-                    this.limit = 200
-                }
-                if (this.y < 300 && this.y > 0) {
-                    this.limit = 100
-                }
-
-            }
-
-        }, this)
-    }
-}
 
 class Cloud {
     constructor(x, y, dir, floatSpeed) {
@@ -113,13 +114,13 @@ var randomX = function () {
 
 var cloudOne = new Cloud(randomX(), 600, "left", 2)
 var cloudTwoImage = new Cloud(randomX(), 200, "right", 2.5)
-var cloudThree= new Cloud(randomX(), 400, "left", 3)
+var cloudThree = new Cloud(randomX(), 400, "left", 3)
 
 clouds.push(cloudOne, cloudTwoImage, cloudThree)
 
 
 var timerTick = setInterval(function () {
-    timer--  
+    timer--
 }, 1000)
 
 
@@ -186,7 +187,7 @@ var render = function () {
     ctx.fillText(score, 855, 20);
 
 
- 
+
 };
 
 // Update game objects
@@ -195,7 +196,7 @@ var update = function (modifier) {
         if (!player.jumpingStatus) {
             jumping = setInterval(function () {
                 player.jump()
-            }, 1)
+            }, 0)
         }
     }
     if (37 in keysDown) {
@@ -217,13 +218,14 @@ var update = function (modifier) {
         move(cloud)
     })
 
-    if(timer === 0 || player.y - player.height > height) {
+    if (timer === 0 || player.y - player.height > height) {
         resetGame()
     }
 
 };
 
 function checkPosition() {
+    //Handle game looping clouds
     clouds.forEach(function (cloud) {
         if (!player.goingDown && player.jumpingStatus && player.y < height / 2) {
             cloud.y += 15
@@ -233,7 +235,7 @@ function checkPosition() {
 
         if (cloud.y > height) {
             cloud.y = cloud.y - height + 200
-            cloud.x = Math.random() * (width - 235)
+            cloud.x = randomX()
             cloud.floatSpeed += 0.5
             cloud.scored = false
         }
@@ -243,14 +245,14 @@ function checkPosition() {
             }
 
         }
-
+        //Falling from clouds
         /*
         if((cloud.y - player.y > 100 && cloud.y - player.y < 150) && player.x  > cloud.x + cloud.width / 1.2 ||(cloud.y - player.y > 100 && cloud.y - player.y < 150) && ( player.y < cloud.y && player.x + player.width < cloud.x && !player.jumpingStatus) ) {
             goingDown = true
             player.fall()       
         }
         */
-        if( player.fallingStatus &&(player.x + 15 < cloud.x + cloud.width) && (player.x + player.width - 15  > cloud.x) && (player.y + player.height + 3  > cloud.y) && (player.y + player.height < cloud.y + cloud.height) )  {
+        if (player.fallingStatus && (player.x + 15 < cloud.x + cloud.width) && (player.x + player.width - 15 > cloud.x) && (player.y + player.height + 3 > cloud.y) && (player.y + player.height < cloud.y + cloud.height)) {
             goingDown = false;
             jumpingStatus = false
             fallingStatus = false
@@ -259,8 +261,8 @@ function checkPosition() {
         }
 
     })
-    
-   
+
+
 
 }
 function resetGame() {
@@ -271,8 +273,8 @@ function resetGame() {
 
     var cloudOne = new Cloud(randomX(), 600, "left", 2)
     var cloudTwoImage = new Cloud(randomX(), 200, "right", 2.5)
-    var cloudThree= new Cloud(randomX(), 400, "left", 3)
-    
+    var cloudThree = new Cloud(randomX(), 400, "left", 3)
+
     clouds = []
     clouds.push(cloudOne, cloudTwoImage, cloudThree)
 }
@@ -304,10 +306,12 @@ var jumpSound = document.createElement("audio")
 jumpSound.src = "sound/jump.mp3"
 jumpSound.volume = 0.3
 
+/*
 var backgroundMusic = document.createElement("audio")
 backgroundMusic.volume = 0.3
 backgroundMusic.src = "sound/ape2.mp3"
 backgroundMusic.play()
+*/
 
 var main = function () {
     var now = Date.now();
