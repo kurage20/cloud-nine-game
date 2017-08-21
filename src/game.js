@@ -6,105 +6,115 @@ var height = canvas.height
 
 var timer = 60
 var score = 0
-var limit = 450
-var jumpingStatus = false
-var goingDown = false
-var jumping
-var falling
-var fallingStatus = false
-var onCloud = false
 var clouds = []
-var randomX = function() {
+
+//Intervals
+var falling
+var jumping
+
+
+
+class Player {
+    constructor(x, y, speed, width, height, dir) {
+        this.x = x
+        this.y = y
+        this.speed = speed
+        this.width = width
+        this.height = height
+        this.dir = dir
+    }
+
+    moveWithCloud() {
+        clouds.forEach(function (cloud) {
+            if (cloud.y - this.y > 100 && cloud.y - this.y < 150) {
+                this.dir = cloud.dir
+                move(player)
+            }
+        }, this)
+    }
+    fall() {
+        fallingStatus = true
+        falling = setInterval(function () {
+            this.y += 6;
+        }, 10)
+    }
+}
+Player.prototype.onCloud = false
+Player.prototype.jumpingStatus = false
+Player.prototype.goingDown = false
+Player.prototype.fallingStatus = false
+Player.prototype.limit = 450
+
+
+Player.prototype.jump = function () {
+
+    if (this.y > this.limit && !this.goingDown) {
+        this.jumpingStatus = true
+        this.y -= 6;
+    } else {
+        if (!this.fallingStatus) {
+            this.goingDown = true;
+            this.y += 6;
+        }
+
+        if (this.y === jump_y) {
+            this.goingDown = false
+            this.jumpingStatus = false
+            clearInterval(jumping);
+        }
+        clouds.forEach(function (cloud) {
+            if ((this.x + 15 < cloud.x + cloud.width) && (this.x + this.width - 15 > cloud.x) && (this.y + this.height + 5 > cloud.y) && (this.y + this.height < cloud.y + cloud.height)) {
+                score++
+                this.goingDown = false;
+                this.jumpingStatus = false
+                this.onCloud = true
+                clearInterval(jumping)
+                if (this.y < 550 && this.y > 300) {
+                    this.limit = 300
+                }
+                if (this.y < 400 && this.y > 200) {
+                    this.limit = 200
+                }
+                if (this.y < 300 && this.y > 0) {
+                    this.limit = 100
+                }
+
+            }
+
+        }, this)
+    }
+}
+
+class Cloud {
+    constructor(x, y, width, height, dir) {
+        this.x = x
+        this.y = y
+        this.width = width
+        this.height = height
+        this.dir = dir
+    }
+}
+
+var player = new Player(500, 700, 275, 80, 100, "")
+
+var randomX = function () {
     return Math.random() * (width - 235)
 }
 
-var player = {
-    speed: 275,
-    x: 500,   
-    y: 700,
-    width: 80,
-    height: 100,
-    dir: ""
-}
-
-var Cloud = function(x,y,width,height,dir) {
-    this.x = x
-    this.y = y
-    this.width = width
-    this.height = height
-    this.dir = dir
-}
-
-var cloudOne = new Cloud(20,600,235,56, "right")
+var cloudOne = new Cloud(20, 600, 235, 56, "right")
 var cloud = new Cloud(randomX(), 200, 235, 56, "left")
 var secondCloud = new Cloud(randomX(), 400, 235, 56, "right")
 
+clouds.push(cloudOne, secondCloud, cloud)
 
-clouds.push.apply(clouds, [cloudOne,secondCloud,cloud])
 var jump_y = player.y
 
-
-function moveCloud(cloud) {
-    if(cloud.dir === "right") {
-        cloud.x+= 2
-    }
-    if(cloud.x > 650) {
-        cloud.dir = "left"
-    }
-    if(cloud.dir === "left") {
-        cloud.x-= 2
-    }
-    if(cloud.x < 150) {
-        cloud.dir  = "right"
-    }
-}
-
-
-function jump() {
-    if(player.y > limit && !goingDown){
-        jumpingStatus = true
-        player.y-=6 ;
-    } else {
-        if(!fallingStatus) {
-            goingDown = true;
-            player.y +=6;
-        }
-
-        if(player.y === jump_y) {
-            goingDown = false
-            jumpingStatus = false
-            clearInterval(jumping);
-        }
-           clouds.forEach(function(cloud) {
-            if((player.x + 15 < cloud.x + cloud.width) && (player.x + player.width - 15  > cloud.x) && (player.y + player.height > cloud.y ) && (player.y + player.height < cloud.y + cloud.height) )  {
-                score++
-                goingDown = false;
-                jumpingStatus = false
-                onCloud = true
-                clearInterval(jumping)
-                console.log(player.y)
-                if(player.y < 550 && player.y > 400) {
-                    limit=350
-                }
-                if(player.y < 400 && player.y > 300) {
-                    limit= 250
-                }
-                if(player.y < 300 && player.y > 0) {
-                    limit = 150
-                }
-                
-            }
-       
-           }) 
-    }
-}
-
-var timerTick = setInterval(function() {
+var timerTick = setInterval(function () {
     timer--
-    if(timer === 0) {
+    if (timer === 0) {
         clearInterval(timerTick)
     }
-    
+
 }, 1000)
 
 var bgImage = new Image();
@@ -116,7 +126,7 @@ var randomCloud = new Image()
 var randomCloudOne = new Image()
 
 var cloudImages = ["../PNG/cloud1.png", "../PNG/cloud2.png", "../PNG/cloud3.png"]
-var getRandomCloud = function() {
+var getRandomCloud = function () {
     return cloudImages[Math.floor(Math.random() * cloudImages.length)]
 }
 
@@ -128,85 +138,92 @@ startCloudImage.src = getRandomCloud()
 randomCloud.src = getRandomCloud()
 randomCloudOne.src = getRandomCloud()
 
-
 // Handle keyboard controls
 var keysDown = {};
 
 addEventListener("keydown", function (e) {
-	keysDown[e.keyCode] = true;
+    keysDown[e.keyCode] = true;
 }, false);
 
 addEventListener("keyup", function (e) {
-	delete keysDown[e.keyCode];
+    delete keysDown[e.keyCode];
 }, false);
 
 
 var render = function () {
-	ctx.drawImage(bgImage, 0, 0);
+    ctx.drawImage(bgImage, 0, 0);
     ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
     ctx.drawImage(startCloudImage, clouds[0].x, clouds[0].y, clouds[0].width, clouds[0].height)
     ctx.drawImage(randomCloud, clouds[1].x, clouds[1].y, clouds[1].width, clouds[1].height)
-    ctx.drawImage(randomCloudOne, clouds[2].x, clouds[2].y, clouds[2].width, clouds[2].height ) 
-    
+    ctx.drawImage(randomCloudOne, clouds[2].x, clouds[2].y, clouds[2].width, clouds[2].height)
+
     ctx.drawImage(timerImage, 20, 20, 25, 35)
-	ctx.fillStyle = "rgb(250, 250, 250)";
-	ctx.font = "35px Helvetica";
-	ctx.textAlign = "left";
-	ctx.textBaseline = "top";
+    ctx.fillStyle = "rgb(250, 250, 250)";
+    ctx.font = "35px Helvetica";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
     ctx.fillText(timer, 55, 20);
-    
-  
+
+
     ctx.drawImage(scoreImage, 900, 15, 74, 42)
     ctx.fillStyle = "rgb(250, 250, 250)";
-	ctx.font = "35px Helvetica";
-	ctx.textAlign = "left";
-	ctx.textBaseline = "top";
+    ctx.font = "35px Helvetica";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
     ctx.fillText(score, 855, 20);
-    
-    
+
+
 };
-function fall() {
-    fallingStatus = true
-    falling = setInterval(function() {
-        player.y +=6;
-    }, 10)
-}
 
 // Update game objects
 var update = function (modifier) {
-    if(38 in keysDown) {
-        if(!jumpingStatus) {
-            jumping = setInterval(jump,10)
+    if (38 in keysDown) {
+        if (!player.jumpingStatus) {
+            jumping = setInterval(function () {
+                player.jump()
+            }, 10)
         }
     }
-    if (37 in keysDown) { 
-        if(player.x > 5) {
+    if (37 in keysDown) {
+        if (player.x > 5) {
             player.x -= player.speed * modifier;
         }
 
-	}
-    if (39 in keysDown) { 
-        player.x += player.speed * modifier;    
+    }
+    if (39 in keysDown) {
+        player.x += player.speed * modifier;
 
     }
     checkPosition()
-    
-    if(onCloud) {
-        moveWithCloud()
-    }
-    clouds.forEach(function(cloud) {
-        moveCloud(cloud)
-    })
- 
 
+    if (player.onCloud) {
+        player.moveWithCloud()
+    }
+    clouds.forEach(function (cloud) {
+        move(cloud)
+    })
+    console.log(player.y)
 
 };
+
 function checkPosition() {
-    clouds.forEach(function(cloud) {
-        if((player.x + 15 < cloud.x + cloud.width) && (player.x + player.width - 15  > cloud.x) && (player.y - player.height === cloud.y - cloud.height) ) {
+    clouds.forEach(function (cloud) {
+        if ((player.x + 15 < cloud.x + cloud.width) && (player.x + player.width - 15 > cloud.x) && (player.y - player.height === cloud.y - cloud.height)) {
             goingDown = true
-            jumpingStatus = false
-            
+            jumpingStatus = true
+
+        }
+        if (!player.goingDown && player.jumpingStatus && player.y < height / 2) {
+            cloud.y += 10
+        }
+        if (cloud.y > height) {
+            cloud.y = cloud.y - height + 150
+        }
+        if (player.goingDown && player.jumpingStatus && player.y < height / 2) {
+            if (player.onCloud) {
+                cloud.y -= 10
+            }
+
         }
     })
     /*
@@ -235,52 +252,40 @@ function checkPosition() {
         clearInterval(falling)
     }
 */
-
-clouds.forEach(function(cloud) {
-    if(!goingDown && jumpingStatus && player.y < height / 2) {
-        cloud.y+=8
-    }
-    if(cloud.y > height) {
-        cloud.y = cloud.y - height + 150
-    }
-})
-
-
-}
-
-function moveWithCloud() {
-    clouds.forEach(function(cloud) {
-        if(cloud.y - player.y > 100 && cloud.y - player.y < 150) {
-            player.dir = cloud.dir
-            moveCloud(player)      
-        }
-    })
-
 }
 
 var main = function () {
-	var now = Date.now();
+    var now = Date.now();
     var delta = now - then;
-    checkPosition()
-	update(delta / 1000);
-	render();
-	then = now;
+    update(delta / 1000);
+    render();
+    then = now;
     requestAnimationFrame(main);
- 
+
 };
+
+//Move cloud or player
+function move(object) {
+    object.dir === "right" ? object.x += 2 : object.x -= 2
+    if (object.x > 650) {
+        object.dir = "left"
+    } else if (object.x < 150) {
+        object.dir = "right"
+    }
+}
 // Cross-browser support for requestAnimationFrame
 var w = window;
 requestAnimationFrame = w.requestAnimationFrame || w.webkitRequestAnimationFrame || w.msRequestAnimationFrame || w.mozRequestAnimationFrame;
 
 // Make canvas responsive 
-function resize(){    
-    $("#canvas").outerHeight($(window).height()-$("#canvas").offset().top- Math.abs($("#canvas").outerHeight(true) - $("#canvas").outerHeight()));
-  }
-  $(document).ready(function(){
-    $(window).on("resize", function(){                      
+function resize() {
+    $("#canvas").outerHeight($(window).height() - $("#canvas").offset().top - Math.abs($("#canvas").outerHeight(true) - $("#canvas").outerHeight()));
+}
+$(document).ready(function () {
+    $(window).on("resize", function () {
         resize();
     });
-  });
+});
 
 var then = Date.now();
 main();
