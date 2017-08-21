@@ -12,22 +12,31 @@ var clouds = []
 var falling
 var jumping
 
+var jumpSound = document.createElement("audio")
+jumpSound.src = "jump.mp3"
+jumpSound.volume = 0.3
 
+var backgroundMusic = document.createElement("audio")
+backgroundMusic.volume = 0.3
+backgroundMusic.src = "mario.mp3"
+backgroundMusic.play()
 
 class Player {
-    constructor(x, y, speed, width, height, dir) {
+    constructor(x, y, speed, width, height, dir, floatSpeed) {
         this.x = x
         this.y = y
         this.speed = speed
         this.width = width
         this.height = height
         this.dir = dir
+        this.floatSpeed = floatSpeed
     }
 
     moveWithCloud() {
         clouds.forEach(function (cloud) {
             if (cloud.y - this.y > 100 && cloud.y - this.y < 150) {
                 this.dir = cloud.dir
+                this.floatSpeed = cloud.floatSpeed
                 move(player)
             }
         }, this)
@@ -50,11 +59,13 @@ Player.prototype.jump = function () {
 
     if (this.y > this.limit && !this.goingDown) {
         this.jumpingStatus = true
-        this.y -= 6;
+        this.y -= 7;
+        jumpSound.play()
+        
     } else {
         if (!this.fallingStatus) {
             this.goingDown = true;
-            this.y += 6;
+            this.y += 7;
         }
 
         if (this.y === jump_y) {
@@ -63,17 +74,17 @@ Player.prototype.jump = function () {
             clearInterval(jumping);
         }
         clouds.forEach(function (cloud) {
-            if ((this.x + 15 < cloud.x + cloud.width) && (this.x + this.width - 15 > cloud.x) && (this.y + this.height + 5 > cloud.y) && (this.y + this.height < cloud.y + cloud.height)) {
+            if ((this.x + 15 < cloud.x + cloud.width) && (this.x + this.width - 15 > cloud.x) && (this.y + this.height + 10 > cloud.y) && (this.y + this.height - 20 < cloud.y + cloud.height)) {
                 score++
                 this.goingDown = false;
                 this.jumpingStatus = false
                 this.onCloud = true
                 clearInterval(jumping)
                 if (this.y < 550 && this.y > 300) {
-                    this.limit = 300
+                    this.limit = 325
                 }
                 if (this.y < 400 && this.y > 200) {
-                    this.limit = 200
+                    this.limit = 225
                 }
                 if (this.y < 300 && this.y > 0) {
                     this.limit = 100
@@ -86,28 +97,29 @@ Player.prototype.jump = function () {
 }
 
 class Cloud {
-    constructor(x, y, width, height, dir) {
+    constructor(x, y, width, height, dir, floatSpeed) {
         this.x = x
         this.y = y
         this.width = width
         this.height = height
         this.dir = dir
+        this.floatSpeed = floatSpeed
     }
 }
 
-var player = new Player(500, 700, 275, 80, 100, "")
+var player = new Player(500, 700, 275, 80, 100, "", 2)
+var jump_y = player.y
 
 var randomX = function () {
     return Math.random() * (width - 235)
 }
 
-var cloudOne = new Cloud(20, 600, 235, 56, "right")
-var cloud = new Cloud(randomX(), 200, 235, 56, "left")
-var secondCloud = new Cloud(randomX(), 400, 235, 56, "right")
+var cloudOne = new Cloud(randomX(), 600, 235, 56, "right", 2)
+var cloudTwo = new Cloud(randomX(), 200, 235, 56, "left", 2.5)
+var cloudThree= new Cloud(randomX(), 400, 235, 56, "right", 3)
 
-clouds.push(cloudOne, secondCloud, cloud)
+clouds.push(cloudOne, cloudTwo, cloudThree)
 
-var jump_y = player.y
 
 var timerTick = setInterval(function () {
     timer--
@@ -214,14 +226,15 @@ function checkPosition() {
 
         }
         if (!player.goingDown && player.jumpingStatus && player.y < height / 2) {
-            cloud.y += 10
+            cloud.y += 12
         }
         if (cloud.y > height) {
-            cloud.y = cloud.y - height + 150
+            cloud.y = cloud.y - height + 200
+            cloud.floatSpeed += 0.5
         }
         if (player.goingDown && player.jumpingStatus && player.y < height / 2) {
             if (player.onCloud) {
-                cloud.y -= 10
+                cloud.y -= 3
             }
 
         }
@@ -264,12 +277,12 @@ var main = function () {
 
 };
 
-//Move cloud or player
+//Move horizontally cloud or player
 function move(object) {
-    object.dir === "right" ? object.x += 2 : object.x -= 2
-    if (object.x > 650) {
+    object.dir === "right" ? object.x += object.floatSpeed : object.x -= object.floatSpeed
+    if (object.x > 700) {
         object.dir = "left"
-    } else if (object.x < 150) {
+    } else if (object.x < 50) {
         object.dir = "right"
     }
 }
