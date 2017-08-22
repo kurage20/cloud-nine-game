@@ -20,6 +20,7 @@ class Player {
         this.height = height
         this.dir = dir
         this.floatSpeed = floatSpeed
+        this.limit = this.y - 150
     }
 
     moveWithCloud() {
@@ -31,12 +32,6 @@ class Player {
             }
         }, this)
     }
-    fall() {
-        this.fallingStatus = true
-        falling = setInterval(function () {
-            this.y += 1;
-        }, 10)
-    }
     jump() {
 
         if (this.y > this.limit && !this.goingDown) {
@@ -44,11 +39,11 @@ class Player {
             this.jumpingStatus = true
             this.y -= 3;
             jumpSound.play()
-            console.log(this.y)
 
             clouds.forEach(function (cloud) {
-                if ((this.x + 15 < cloud.x + cloud.width) && (this.x + this.width - 15 > cloud.x) && (this.y === cloud.y - cloud.height)) {
+                if ((this.x + 15 < cloud.x + cloud.width) && (this.x + this.width - 15 > cloud.x) && (this.y  === cloud.y - 5 )) {
                     this.y += 3
+                    console.log("hey")
                     this.goingDown = true
                 }
             }, this)
@@ -56,12 +51,12 @@ class Player {
         } else {
             if (!this.fallingStatus) {
                 this.goingDown = true;
-                this.y += 1.5;
+                this.y += 2;
             }
 
             clouds.forEach(function (cloud) {
                 
-                if ((this.x + 15 < cloud.x + cloud.width) && (this.x + this.width - 15 > cloud.x) && (this.y + this.height > cloud.y - 10) && (this.y + this.height < cloud.y + cloud.height - 10)) {
+                if ((this.x + 15 < cloud.x + cloud.width) && (this.x + this.width - 15 > cloud.x) && (this.y + this.height > cloud.y - 15) && (this.y + this.height < cloud.y + cloud.height - 15)) {
                     if (!cloud.scored) {
                         score++
                         cloud.scored = true
@@ -70,15 +65,7 @@ class Player {
                     this.jumpingStatus = false
                     this.onCloud = true
                     clearInterval(jumping)
-                    if (this.y < 550 && this.y > 400) {
-                        this.limit = 300
-                    }
-                    if (this.y < 400 && this.y > 300) {
-                        this.limit = 200
-                    }
-                    if (this.y < 300 && this.y > 0) {
-                        this.limit = 100
-                    }
+                    this.limit = this.y - 150
 
                 }
 
@@ -90,7 +77,6 @@ Player.prototype.onCloud = false
 Player.prototype.jumpingStatus = false
 Player.prototype.goingDown = false
 Player.prototype.fallingStatus = false
-Player.prototype.limit = 425
 
 class Cloud {
     constructor(x, y, dir, floatSpeed) {
@@ -113,8 +99,8 @@ var randomX = function () {
 }
 
 var cloudOne = new Cloud(randomX(), 600, "left", 2)
-var cloudTwoImage = new Cloud(randomX(), 200, "right", 2.5)
-var cloudThree = new Cloud(randomX(), 400, "left", 3)
+var cloudTwoImage = new Cloud(randomX(), 400, "right", 2.5)
+var cloudThree = new Cloud(randomX(), 200, "left", 3)
 
 clouds.push(cloudOne, cloudTwoImage, cloudThree)
 
@@ -186,8 +172,6 @@ var render = function () {
     ctx.textBaseline = "top";
     ctx.fillText(score, 855, 20);
 
-
-
 };
 
 // Update game objects
@@ -227,31 +211,45 @@ var update = function (modifier) {
 function checkPosition() {
     //Handle game looping clouds
     clouds.forEach(function (cloud) {
-        if (!player.goingDown && player.jumpingStatus && player.y < height / 2) {
+        if (!player.goingDown && player.jumpingStatus && !player.onCloud && player.y > 400) {
+            cloud.y += 12
+        } else if(!player.goingDown && player.jumpingStatus && !player.onCloud && player.y < 400) {
             cloud.y += 15
-        } else if (!player.goingDown && player.jumpingStatus && player.y < height / 3) {
-            cloud.y += 20
-        }
+        }  
 
         if (cloud.y > height) {
             cloud.y = cloud.y - height + 200
             cloud.x = randomX()
-            cloud.floatSpeed += 0.5
             cloud.scored = false
+            cloud.floatSpeed += 0.5
+            /*
+            var speed = cloud.floatSpeed
+            
+            
+            var slideCloud = setInterval(function() {
+                if(cloud.y < 200) {
+                    cloud.y += 5
+                } else {
+                    cloud.floatSpeed = speed
+                }
+                
+            }, 10)
+            */
         }
-        if (player.goingDown && !player.jumpingStatus && player.y < height / 2) {
-            if (player.onCloud) {
-                cloud.y -= 10
-            }
 
-        }
         //Falling from clouds
         /*
-        if((cloud.y - player.y > 100 && cloud.y - player.y < 150) && player.x  > cloud.x + cloud.width / 1.2 ||(cloud.y - player.y > 100 && cloud.y - player.y < 150) && ( player.y < cloud.y && player.x + player.width < cloud.x && !player.jumpingStatus) ) {
-            goingDown = true
-            player.fall()       
+        if((cloud.y - player.y > 100 && cloud.y - player.y < 150) && player.x  > cloud.x + cloud.width ||(cloud.y - player.y > 100 && cloud.y - player.y < 150) && ( player.y < cloud.y && player.x + player.width < cloud.x && !player.jumpingStatus) ) {
+            console.log("falling from cloud")
+            this.fallingStatus = true
+            falling = setInterval(function () {
+                
+                player.y += 1;
+                
+            }, 10)      
         }
         */
+        /*
         if (player.fallingStatus && (player.x + 15 < cloud.x + cloud.width) && (player.x + player.width - 15 > cloud.x) && (player.y + player.height + 3 > cloud.y) && (player.y + player.height < cloud.y + cloud.height)) {
             goingDown = false;
             jumpingStatus = false
@@ -259,6 +257,7 @@ function checkPosition() {
             clearInterval(falling)
             onCloud = true
         }
+        */
 
     })
 
@@ -267,6 +266,7 @@ function checkPosition() {
 }
 function resetGame() {
     clearInterval(jumping)
+    clearInterval(falling)
     timer = 60
     score = 0
     player = new Player(500, 700, 275, 80, 100, "", 2)
