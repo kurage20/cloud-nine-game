@@ -6,7 +6,10 @@ var height = canvas.height
 var timer = 60
 var score = 0
 var clouds = []
+var scores = []
+var disableMovement = false
 
+var savedScores = JSON.parse(localStorage.getItem("scores"));
 //Intervals
 var falling
 var jumping
@@ -20,7 +23,7 @@ class Player {
         this.height = height
         this.dir = dir
         this.floatSpeed = floatSpeed
-        this.limit = this.y - 150
+        this.jumpLimit = this.y - 150
     }
 
     moveWithCloud() {
@@ -34,19 +37,20 @@ class Player {
     }
     jump() {
 
-        if (this.y > this.limit && !this.goingDown) {
+        if (this.y > this.jumpLimit && !this.goingDown) {
             this.onCloud = false
             this.jumpingStatus = true
             this.y -= 3;
             jumpSound.play()
-
+            /*
             clouds.forEach(function (cloud) {
                 if ((this.x + 15 < cloud.x + cloud.width) && (this.x + this.width - 15 > cloud.x) && (this.y  === cloud.y - 5 )) {
                     this.y += 3
-                    console.log("hey")
+                    console.log("bumped")
                     this.goingDown = true
                 }
             }, this)
+            */
 
         } else {
             if (!this.fallingStatus) {
@@ -55,8 +59,8 @@ class Player {
             }
 
             clouds.forEach(function (cloud) {
-                
-                if ((this.x + 15 < cloud.x + cloud.width) && (this.x + this.width - 15 > cloud.x) && (this.y + this.height > cloud.y - 15) && (this.y + this.height < cloud.y + cloud.height - 15)) {
+
+                if ((this.x + 15 < cloud.x + cloud.width) && (this.x + this.width - 15 > cloud.x) && (this.y + this.height > cloud.y - 10) && (this.y + this.height < cloud.y + cloud.height - 15)) {
                     if (!cloud.scored) {
                         score++
                         cloud.scored = true
@@ -65,9 +69,10 @@ class Player {
                     this.jumpingStatus = false
                     this.onCloud = true
                     clearInterval(jumping)
-                    this.limit = this.y - 150
+                    this.jumpLimit = this.y - 150
 
                 }
+
 
             }, this)
         }
@@ -90,17 +95,15 @@ class Cloud {
     }
 }
 
-
-
-var player = new Player(500, 700, 300, 80, 100, "", 2)
+var player = new Player(500, 700, 325, 80, 100, "", 2)
 
 var randomX = function () {
     return Math.random() * (width - 235)
 }
 
-var cloudOne = new Cloud(randomX(), 600, "left", 2)
-var cloudTwoImage = new Cloud(randomX(), 400, "right", 2.5)
-var cloudThree = new Cloud(randomX(), 200, "left", 3)
+var cloudOne = new Cloud(randomX(), 200, "left", 2)
+var cloudTwoImage = new Cloud(randomX(), 400, "right", 3)
+var cloudThree = new Cloud(randomX(), 600, "left", 4)
 
 clouds.push(cloudOne, cloudTwoImage, cloudThree)
 
@@ -157,41 +160,46 @@ var render = function () {
     ctx.fill();
     ctx.closePath();
 
-    ctx.drawImage(timerImage, 20, 20, 25, 35)
+    ctx.drawImage(timerImage, 20, 20, 25, 40)
     ctx.fillStyle = "rgb(250, 250, 250)";
-    ctx.font = "35px Helvetica";
+    ctx.font = "25px Atari";
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
-    ctx.fillText(timer, 55, 20);
+    ctx.fillText(timer, 55, 30);
 
 
     ctx.drawImage(scoreImage, 900, 15, 74, 42)
     ctx.fillStyle = "rgb(250, 250, 250)";
-    ctx.font = "35px Helvetica";
+    ctx.font = "25px Atari";
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
-    ctx.fillText(score, 855, 20);
+    ctx.fillText(score, 845, 30);
 
 };
 
 // Update game objects
 var update = function (modifier) {
     if (38 in keysDown) {
-        if (!player.jumpingStatus) {
+
+        if (!player.jumpingStatus && !disableMovement) {
             jumping = setInterval(function () {
                 player.jump()
             }, 0)
         }
     }
     if (37 in keysDown) {
-        if (player.x > 5) {
+        if (player.x > 5 && !disableMovement) {
             player.x -= player.speed * modifier;
         }
 
     }
     if (39 in keysDown) {
-        player.x += player.speed * modifier;
-
+        if (!disableMovement) {
+            player.x += player.speed * modifier;
+        }
+    }
+    if (83 in keysDown) {
+        backgroundMusic.pause()
     }
     checkPosition()
 
@@ -202,7 +210,7 @@ var update = function (modifier) {
         move(cloud)
     })
 
-    if (timer === 0 || player.y - player.height > height) {
+    if (timer <= 0 || player.y - player.height > height) {
         resetGame()
     }
 
@@ -212,23 +220,25 @@ function checkPosition() {
     //Handle game looping clouds
     clouds.forEach(function (cloud) {
         if (!player.goingDown && player.jumpingStatus && !player.onCloud && player.y > 400) {
-            cloud.y += 12
-        } else if(!player.goingDown && player.jumpingStatus && !player.onCloud && player.y < 400) {
-            cloud.y += 15
-        }  
+            cloud.y += 13
+        } else if (!player.goingDown && player.jumpingStatus && !player.onCloud && player.y < 400) {
+            cloud.y += 17
+        } else if (!player.goingDown && player.jumpingStatus && !player.onCloud && player.y < 200) {
+            cloud.y += 19
+        }
 
         if (cloud.y > height) {
             cloud.y = cloud.y - height + 200
             cloud.x = randomX()
             cloud.scored = false
-            cloud.floatSpeed += 0.5
-            /*
+            cloud.floatSpeed += 1
+
             var speed = cloud.floatSpeed
-            
-            
+
+            /*
             var slideCloud = setInterval(function() {
                 if(cloud.y < 200) {
-                    cloud.y += 5
+                    cloud.y += 12
                 } else {
                     cloud.floatSpeed = speed
                 }
@@ -249,6 +259,7 @@ function checkPosition() {
             }, 10)      
         }
         */
+
         /*
         if (player.fallingStatus && (player.x + 15 < cloud.x + cloud.width) && (player.x + player.width - 15 > cloud.x) && (player.y + player.height + 3 > cloud.y) && (player.y + player.height < cloud.y + cloud.height)) {
             goingDown = false;
@@ -261,46 +272,64 @@ function checkPosition() {
 
     })
 
-
-
 }
+
 function resetGame() {
+    submitScores()
+    $('#myModal').modal('toggle');
+    player = new Player(500, 700, 325, 80, 100, "", 2)
     clearInterval(jumping)
     clearInterval(falling)
     timer = 60
     score = 0
-    player = new Player(500, 700, 275, 80, 100, "", 2)
+    player = new Player(500, 700, 325, 80, 100, "", 2)
 
     var cloudOne = new Cloud(randomX(), 600, "left", 2)
     var cloudTwoImage = new Cloud(randomX(), 200, "right", 2.5)
     var cloudThree = new Cloud(randomX(), 400, "left", 3)
 
+    cloudOneImage.src = randomCloudImage()
+    cloudTwoImage.src = randomCloudImage()
+    cloudThreeImage.src = randomCloudImage()
+
     clouds = []
     clouds.push(cloudOne, cloudTwoImage, cloudThree)
+
+
 }
 
 //Move horizontally cloud or player
 function move(object) {
     object.dir === "right" ? object.x += object.floatSpeed : object.x -= object.floatSpeed
-    if (object.x > 700) {
+    if (object.x > 775) {
         object.dir = "left"
-    } else if (object.x < 50) {
+    } else if (object.x < 25) {
         object.dir = "right"
     }
 }
+
+function submitScores() {
+    scores.push(score)
+
+    scores.sort(function (a, b) {
+        return b - a
+    })
+    $("#score-list").empty()
+    scores.forEach(function (score) {
+        $("#score-list").append("<li>" + score + "</li>")
+    })
+}
+
+function resetScores() {
+    scores = []
+    localStorage.removeItem("scores")
+    resetGame()
+
+}
+
 // Cross-browser support for requestAnimationFrame
 var w = window;
 requestAnimationFrame = w.requestAnimationFrame || w.webkitRequestAnimationFrame || w.msRequestAnimationFrame || w.mozRequestAnimationFrame;
-
-// Make canvas responsive 
-function resize() {
-    $("#canvas").outerHeight($(window).height() - $("#canvas").offset().top - Math.abs($("#canvas").outerHeight(true) - $("#canvas").outerHeight()));
-}
-$(document).ready(function () {
-    $(window).on("resize", function () {
-        resize();
-    });
-});
 
 var jumpSound = document.createElement("audio")
 jumpSound.src = "sound/jump.mp3"
@@ -308,10 +337,35 @@ jumpSound.volume = 0.3
 
 /*
 var backgroundMusic = document.createElement("audio")
-backgroundMusic.volume = 0.3
-backgroundMusic.src = "sound/ape2.mp3"
+backgroundMusic.volume = 0.2
+backgroundMusic.src = "sound/ape3.mp3"
 backgroundMusic.play()
 */
+
+//Load and save scores
+$(document).ready(function () {
+    if (localStorage.scores !== undefined) {
+
+        var storedScores = JSON.parse(localStorage.getItem("scores"));
+        scores = scores.concat(storedScores)
+        scores.sort(function (a, b) {
+            return b - a
+        })
+        var date = new Date()
+        var time = + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+    }
+    
+    $("#play-again").click(resetGame)
+    
+    //Disable movement when modal is open
+    $('#myModal').on('hide.bs.modal show.bs.modal', function (e) {
+        disableMovement = !disableMovement
+    })
+    
+})
+$(window).on("beforeunload", function () {
+    localStorage.setItem("scores", JSON.stringify(scores))
+})
 
 var main = function () {
     var now = Date.now();

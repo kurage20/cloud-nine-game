@@ -1,14 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Cloud Nine</title>
 </head>
 <body>
-    <canvas id="canvas" width="1024" height="800"></canvas>
+    <canvas id="canvas" class='img-responsive' width="1024" height="800"></canvas>
+      
+      <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <h4 class="modal-title text-center" id="myModalLabel">Highest scores</h4>
+            </div>
+            <div class="modal-body">
+                <p style="padding-left:40px">Time</p> 
+                <p style="padding-left: 40px"> Score</p>
+            <ol id="score-list"></ol>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger pull-right" onclick="resetScores()" > Reset scores</button>
+             
+                <button type="button" id="play-again" class="btn btn-primary pull-left" data-dismiss="modal">Play Again</button>
+            </div>
+          </div>
+        </div>
+      </div>
 <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 <script src="game.js"></script>
 </body>
 </html>
