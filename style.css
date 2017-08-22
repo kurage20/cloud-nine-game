@@ -1,0 +1,17 @@
+@font-face {
+    font-family: "Atari";
+    src: url(atarifull.ttf);
+}
+div p {
+    display: inline
+}
+.modal-dialog {
+    position: absolute;
+    top: 50px;
+    right: 900px;
+    bottom: 0;
+    left: 0;
+    z-index: 10040;
+    overflow: auto;
+    overflow-y: auto;
+}
