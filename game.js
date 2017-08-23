@@ -25,7 +25,7 @@ class Player {
         this.jumpLimit = this.y - 150
         this.onCloud = false
         this.jumpingStatus = false
-        this.goingDown = false
+        this.jumpingDown = false
         this.fallingStatus = false
         this.dir = ""
     }
@@ -41,27 +41,26 @@ class Player {
     }
     jump() {
 
-        if (this.y > this.jumpLimit && !this.goingDown && !this.fallingStatus) {
+        if (this.y > this.jumpLimit && !this.jumpingDown && !this.fallingStatus) {
             this.onCloud = false
             this.jumpingStatus = true
             this.y -= 3;
             jumpSound.play()
             this.speed = 450
-            /*
+            
             clouds.forEach(function (cloud) {
-                if ((this.x + 15 < cloud.x + cloud.width) && (this.x + this.width - 15 > cloud.x) && (this.y  === cloud.y - 5 )) {
+                if ((this.x + 15 < cloud.x + cloud.width) && (this.x + this.width - 15 > cloud.x) && (this.y - 28 ===  cloud.y)) {
                     this.y += 3
                     console.log("bumped")
-                    this.goingDown = true
+                    this.jumpingDown = true
                 }
-            }, this)
-            */
+            }, this)  
 
         } else {
             this.speed = 325
 
             if (!this.fallingStatus) {
-                this.goingDown = true;
+                this.jumpingDown = true;
                 this.y += 2;
             }
 
@@ -72,14 +71,13 @@ class Player {
                         score++
                         cloud.scored = true
                     }
-                    this.goingDown = false;
+                    this.jumpingDown = false;
                     this.jumpingStatus = false
                     this.onCloud = true
                     clearInterval(jumping)
                     this.jumpLimit = this.y - 150
 
                 }
-
 
             }, this)
         }
@@ -111,11 +109,9 @@ var cloudThree = new Cloud(randomX(), 600, "left", 4)
 
 clouds.push(cloudOne, cloudTwoImage, cloudThree)
 
-
 var timerTick = setInterval(function () {
     timer--
 }, 1000)
-
 
 var bgImage = new Image();
 var playerImage = new Image();
@@ -148,7 +144,6 @@ addEventListener("keyup", function (e) {
     delete keysDown[e.keyCode];
 }, false);
 
-
 var render = function () {
     ctx.drawImage(bgImage, 0, 0);
     ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
@@ -168,7 +163,6 @@ var render = function () {
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
     ctx.fillText(timer, 55, 30);
-
 
     ctx.drawImage(scoreImage, 900, 15, 74, 42)
     ctx.fillStyle = "rgb(250, 250, 250)";
@@ -215,11 +209,11 @@ var update = function (modifier) {
 function gameCalc() {
     //Handle game looping clouds
     clouds.forEach(function (cloud) {
-        if (!player.goingDown && player.jumpingStatus && !player.onCloud && player.y > 400) {
+        if (!player.jumpingDown && player.jumpingStatus && !player.onCloud && player.y > 400) {
             cloud.y += 14
-        } else if (!player.goingDown && player.jumpingStatus && !player.onCloud && player.y < 400) {
+        } else if (!player.jumpingDown && player.jumpingStatus && !player.onCloud && player.y < 400) {
             cloud.y += 18
-        } else if (!player.goingDown && player.jumpingStatus && !player.onCloud && player.y < 200) {
+        } else if (!player.jumpingDown && player.jumpingStatus && !player.onCloud && player.y < 200) {
             cloud.y += 20
         }
 
@@ -242,22 +236,18 @@ function gameCalc() {
             }, 10)
             */
         }
-
         //Falling from clouds
         if ((cloud.y - player.y > 100 && cloud.y - player.y < 150) && (player.x > cloud.x + cloud.width - 10 || player.x + player.width < cloud.x + 10) && player.onCloud) {
             console.log("falling")
-
             falling = setInterval(function () {
+                player.onCloud = false
                 player.fallingStatus = true
-                player.goingDown = true
                 player.y += 2
             })
         }
-
-
         //Land on cloud while falling
         if (player.fallingStatus && (player.x + 15 < cloud.x + cloud.width) && (player.x + player.width - 10 > cloud.x) && (player.y + player.height > cloud.y - 10) && (player.y + player.height < cloud.y + cloud.height - 10)) {
-            player.goingDown = false;
+            player.jumpingDown = false;
             player.jumpingStatus = false
             player.fallingStatus = false
             clearInterval(falling)
@@ -305,19 +295,21 @@ function move(object) {
 }
 
 function submitScores() {
-    var obj = {}
-    var date = new Date()
-    var time = + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
-
-    obj.time = time
-    obj.score = score
-
     if (score > 0) {
+        var obj = {}
+        var date = new Date()
+        var time = date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+    
+        obj.time = time
+        obj.score = score
+        
         scores.push(obj)
     }
+
     scores.sort(function (a, b) {
         return b.score - a.score
     })
+
     $("#score-list").empty()
     scores.forEach(function (play) {
         $("#score-list").append("<li class=list-group-item>" + play.score  + " " + play.time + "</li>")
@@ -331,20 +323,17 @@ function resetScores() {
 
 }
 
-// Cross-browser support for requestAnimationFrame
-var w = window;
-requestAnimationFrame = w.requestAnimationFrame || w.webkitRequestAnimationFrame || w.msRequestAnimationFrame || w.mozRequestAnimationFrame;
-
 var jumpSound = document.createElement("audio")
 jumpSound.src = "sound/jump.mp3"
 jumpSound.volume = 0.3
 
-
+/*
 var backgroundMusic = document.createElement("audio")
 backgroundMusic.volume = 0.2
 backgroundMusic.src = "sound/dustforce.mp3"
 backgroundMusic.play()
 backgroundMusic.loop = true
+*/
 
 
 $(document).ready(function () {
@@ -381,6 +370,10 @@ $(document).ready(function () {
 $(window).on("beforeunload", function () {
     localStorage.setItem("scores", JSON.stringify(scores))
 })
+
+// Cross-browser support for requestAnimationFrame
+var w = window;
+requestAnimationFrame = w.requestAnimationFrame || w.webkitRequestAnimationFrame || w.msRequestAnimationFrame || w.mozRequestAnimationFrame;
 
 var main = function () {
     var now = Date.now();
