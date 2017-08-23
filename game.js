@@ -244,19 +244,19 @@ function gameCalc() {
         }
 
         //Falling from clouds
-        if ((cloud.y - player.y > 100 && cloud.y - player.y < 150) && (player.x > cloud.x + cloud.width - 20 || player.x + player.width < cloud.x + 10) && player.onCloud) {
+        if ((cloud.y - player.y > 100 && cloud.y - player.y < 150) && (player.x > cloud.x + cloud.width - 10 || player.x + player.width < cloud.x + 10) && player.onCloud) {
             console.log("falling")
 
             falling = setInterval(function () {
                 player.fallingStatus = true
                 player.goingDown = true
-                player.y += 3
+                player.y += 2
             })
         }
 
 
         //Land on cloud while falling
-        if (player.fallingStatus && (player.x + 15 < cloud.x + cloud.width) && (player.x + player.width - 15 > cloud.x) && (player.y + player.height > cloud.y - 10) && (player.y + player.height < cloud.y + cloud.height - 15)) {
+        if (player.fallingStatus && (player.x + 15 < cloud.x + cloud.width) && (player.x + player.width - 10 > cloud.x) && (player.y + player.height > cloud.y - 10) && (player.y + player.height < cloud.y + cloud.height - 10)) {
             player.goingDown = false;
             player.jumpingStatus = false
             player.fallingStatus = false
@@ -305,15 +305,22 @@ function move(object) {
 }
 
 function submitScores() {
+    var obj = {}
+    var date = new Date()
+    var time = + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+
+    obj.time = time
+    obj.score = score
+
     if (score > 0) {
-        scores.push(score)
+        scores.push(obj)
     }
     scores.sort(function (a, b) {
-        return b - a
+        return b.score - a.score
     })
     $("#score-list").empty()
-    scores.forEach(function (score) {
-        $("#score-list").append("<li class=list-group-item>" + score + "</li>")
+    scores.forEach(function (play) {
+        $("#score-list").append("<li class=list-group-item>" + play.score  + " " + play.time + "</li>")
     })
 }
 
@@ -332,25 +339,25 @@ var jumpSound = document.createElement("audio")
 jumpSound.src = "sound/jump.mp3"
 jumpSound.volume = 0.3
 
-/*
+
 var backgroundMusic = document.createElement("audio")
 backgroundMusic.volume = 0.2
 backgroundMusic.src = "sound/dustforce.mp3"
 backgroundMusic.play()
 backgroundMusic.loop = true
-*/
+
 
 $(document).ready(function () {
     //Load scores
     if (localStorage.scores !== undefined) {
 
         var storedScores = JSON.parse(localStorage.getItem("scores"));
-        scores = scores.concat(storedScores)
-        scores.sort(function (a, b) {
-            return b - a
+        storedScores.forEach(function(score) {
+            scores.push(score)
         })
-        var date = new Date()
-        var time = + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+        scores.sort(function (a, b) {
+            return b.score - a.score
+        })
     }
 
     $("#play-again").click(resetGame)
