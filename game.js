@@ -14,14 +14,14 @@ var falling
 var jumping
 
 class Player {
-    constructor(x, y, speed, width, height, floatSpeed) {
+    constructor(x, y, speed, width, height) {
         this.x = x
         this.y = y
         this.speed = speed
         this.width = width
         this.height = height
-        this.floatSpeed = floatSpeed
 
+        this.floatSpeed = 2
         this.jumpLimit = this.y - 125
         this.onCloud = false
         this.jumpingStatus = false
@@ -47,34 +47,36 @@ class Player {
             this.y -= 3;
             jumpSound.play()
             this.speed = 550
-
+            
+            //Bump in cloud
             clouds.forEach(function (cloud) {
-                if ((player.x + 15 < cloud.x + cloud.width) && (player.x + player.width - 15 > cloud.x) && (player.y + (player.width / 2) > cloud.y)  && (cloud.y - player.y > 20 && cloud.y - player.y < 100)) {
-                    player.jumpingDown = true
+                if ((this.x + 15 < cloud.x + cloud.width) && (this.x + this.width - 15 > cloud.x) && (this.y + (this.width / 2) > cloud.y)  && (cloud.y - this.y > 20 && cloud.y - this.y < 100)) {
+                    this.jumpingDown = true
                 }
-            })
+            }, this)
 
         } else {
+            //Jumping down
             this.speed = 375
 
             if (!this.fallingStatus) {
                 this.jumpingDown = true;
-                this.y += 2;
+                this.y += 1.5;
             }
-
+            //Fall on cloud when jumping
             clouds.forEach(function (cloud) {
 
-                if ((this.x + 15 < cloud.x + cloud.width) && (this.x + this.width - 15 > cloud.x) && (this.y + this.height > cloud.y - 10) && (this.y + this.height < cloud.y + cloud.height - 15)) {
+                if ((this.x + 15 < cloud.x + cloud.width) && (this.x + this.width - 15 > cloud.x) && (this.y + this.height > cloud.y - 25) && (this.y + this.height < cloud.y + cloud.height - 25)) {
                     if (!cloud.scored) {
                         score++
                         cloud.scored = true
                     }
+                    this.y += 10
                     clearInterval(jumping)
                     this.jumpingDown = false;
                     this.jumpingStatus = false
                     this.onCloud = true
                     this.jumpLimit = this.y - 150
-
                 }
 
             }, this)
@@ -94,7 +96,7 @@ class Cloud {
     }
 }
 
-var player = new Player(width / 2, 695, 375, 80, 100, 2)
+var player = new Player(width / 2, 690, 375, 80, 100)
 
 var randomX = function () {
     return Math.random() * (width - 235)
@@ -180,7 +182,7 @@ var update = function (modifier) {
         }
     }
     if (37 in keysDown) {
-        if (player.x > 5 && !disableMovement) {
+        if (!disableMovement) {
             player.x -= player.speed * modifier;
         }
 
@@ -205,11 +207,11 @@ function gameLogic() {
     //Handle looping clouds
     clouds.forEach(function (cloud) {
         if (!player.jumpingDown && player.jumpingStatus && !player.onCloud && player.y > 400) {
-            cloud.y += 16
+            cloud.y += 17
         } else if (!player.jumpingDown && player.jumpingStatus && !player.onCloud && player.y < 400) {
-            cloud.y += 18
-        } else if (!player.jumpingDown && player.jumpingStatus && !player.onCloud && player.y < 200) {
             cloud.y += 20
+        } else if (!player.jumpingDown && player.jumpingStatus && !player.onCloud && player.y < 200) {
+            cloud.y += 22
         }
 
         if (cloud.y > height) {
@@ -218,30 +220,19 @@ function gameLogic() {
             cloud.scored = false
             cloud.floatSpeed += 1
         }
-            /* slide new cloud from top, but it's buggy
-            
-            var speed = cloud.floatSpeed
-            var slideCloud = setInterval(function() {
-                if(cloud.y < 200) {
-                    cloud.y += 12
-                } else {
-                    cloud.floatSpeed = speed
-                }
-                
-            }, 10)
-            */
        
         //Falling from clouds
         if ((cloud.y - player.y > 100 && cloud.y - player.y < 150) && (player.x > cloud.x + cloud.width - 10 || player.x + player.width < cloud.x + 10) && player.onCloud) {
             console.log("falling")
             player.onCloud = false
+            player.fallingStatus = true
             falling = setInterval(function () {
-                player.fallingStatus = true
                 player.y += 2
             })
         }
         //Land on cloud while falling
-        if (player.fallingStatus && (player.x + 15 < cloud.x + cloud.width) && (player.x + player.width - 10 > cloud.x) && (player.y + player.height > cloud.y - 10) && (player.y + player.height < cloud.y + cloud.height - 10)) {
+        if (player.fallingStatus && (player.x + 15 < cloud.x + cloud.width) && (player.x + player.width - 10 > cloud.x) && (player.y + player.height > cloud.y - 25) && (player.y + player.height < cloud.y + cloud.height - 25)) {
+            player.y+= 10
             player.jumpingDown = false;
             player.jumpingStatus = false
             player.fallingStatus = false
@@ -251,13 +242,13 @@ function gameLogic() {
         }
         move(cloud)
     })
-
+    //Jump/walk through walls
     if (player.x > width) {
         player.x = 0 - player.width;
     } else if (player.x < 0 - player.width) {
         player.x = width;
     }
-
+    
 }
 function resetGame() {
     submitScores()
@@ -265,7 +256,7 @@ function resetGame() {
     timer = 60
     score = 0
 
-    player = new Player(width / 2, 700, 375, 80, 100, 2)
+    player = new Player(width / 2, 690, 375, 80, 100)
 
     var cloudOne = new Cloud(randomX(), 150, "left", 2)
     var cloudTwo = new Cloud(randomX(), 375, "right", 3)
