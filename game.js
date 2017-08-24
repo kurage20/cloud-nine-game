@@ -57,7 +57,7 @@ class Player {
             }, this)
 
         } else {
-            this.speed = 400
+            this.speed = 375
 
             if (!this.fallingStatus) {
                 this.jumpingDown = true;
@@ -96,7 +96,7 @@ class Cloud {
     }
 }
 
-var player = new Player(width / 2, 695, 325, 80, 100, 2)
+var player = new Player(width / 2, 695, 375, 80, 100, 2)
 
 var randomX = function () {
     return Math.random() * (width - 235)
@@ -236,8 +236,8 @@ function gameLogic() {
         //Falling from clouds
         if ((cloud.y - player.y > 100 && cloud.y - player.y < 150) && (player.x > cloud.x + cloud.width - 10 || player.x + player.width < cloud.x + 10) && player.onCloud) {
             console.log("falling")
+            player.onCloud = false
             falling = setInterval(function () {
-                player.onCloud = false
                 player.fallingStatus = true
                 player.y += 2
             })
@@ -267,7 +267,7 @@ function resetGame() {
     timer = 60
     score = 0
 
-    player = new Player(width / 2, 700, 325, 80, 100, 2)
+    player = new Player(width / 2, 700, 375, 80, 100, 2)
 
     var cloudOne = new Cloud(randomX(), 150, "left", 2)
     var cloudTwo = new Cloud(randomX(), 375, "right", 3)
@@ -312,7 +312,7 @@ function submitScores() {
     })
 
     $("#score-table tr").remove();
-    $("#score-table").append("<tr>" + "<th>" + "#" + "</th>" + "<th>" + "Time" + "</th>" + "<th>" + "Score" + "</th>" + "</tr>")
+    $("#score-table").append("<tr>" + "<th>" + "Rank" + "</th>" + "<th>" + "Time" + "</th>" + "<th>" + "Score" + "</th>" + "</tr>")
     
     scores.forEach(function (play) {
         play.id = scores.indexOf(play) + 1
@@ -330,13 +330,13 @@ function resetScores() {
 var jumpSound = document.createElement("audio")
 jumpSound.src = "sound/jump.mp3"
 jumpSound.volume = 0.3
-
+/*
 var backgroundMusic = document.createElement("audio")
 backgroundMusic.volume = 0.2
 backgroundMusic.src = "sound/dustforce.mp3"
 backgroundMusic.loop = true
 backgroundMusic.play()
-
+*/
 $(document).ready(function () {
     //Load previous scores
     if (localStorage.scores !== undefined) {
@@ -352,7 +352,7 @@ $(document).ready(function () {
     $('#myModal').on('hide.bs.modal show.bs.modal', function (e) {
         disableMovement = !disableMovement
     })
-    $(document).keyup(function (e) {
+    $(document).keydown(function (e) {
         if (e.keyCode === 83) {
             if (backgroundMusic.paused) {
                 backgroundMusic.play()

@@ -1,13 +1,6 @@
 @font-face {
     font-family: "Atari";
-    src: url(atarifull.ttf);
-}
-.list-group-item {
-    word-spacing: 50px;
-}
-div p {
-    padding-left: 10px;
-    word-spacing: 30px
+    src: url(font/atarifull.ttf);
 }
 
 
