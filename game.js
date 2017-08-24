@@ -49,12 +49,10 @@ class Player {
             this.speed = 550
 
             clouds.forEach(function (cloud) {
-                if ((this.x + 15 < cloud.x + cloud.width) && (this.x + this.width - 15 > cloud.x) && (this.y - 28 === cloud.y)) {
-                    this.y += 3
-                    console.log("bumped")
-                    this.jumpingDown = true
+                if ((player.x + 15 < cloud.x + cloud.width) && (player.x + player.width - 15 > cloud.x) && (player.y + (player.width / 2) > cloud.y)  && (cloud.y - player.y > 20 && cloud.y - player.y < 100)) {
+                    player.jumpingDown = true
                 }
-            }, this)
+            })
 
         } else {
             this.speed = 375
@@ -330,13 +328,13 @@ function resetScores() {
 var jumpSound = document.createElement("audio")
 jumpSound.src = "sound/jump.mp3"
 jumpSound.volume = 0.3
-/*
+
 var backgroundMusic = document.createElement("audio")
 backgroundMusic.volume = 0.2
 backgroundMusic.src = "sound/dustforce.mp3"
 backgroundMusic.loop = true
 backgroundMusic.play()
-*/
+
 $(document).ready(function () {
     //Load previous scores
     if (localStorage.scores !== undefined) {
