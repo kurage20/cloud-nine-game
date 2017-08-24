@@ -2,10 +2,13 @@
     font-family: "Atari";
     src: url(atarifull.ttf);
 }
+.list-group-item {
+    word-spacing: 50px;
+}
 div p {
-    display: inline
+    padding-left: 10px;
+    word-spacing: 30px
 }
 
-.list-group-item {
-    word-spacing: 50px
-}
+
+

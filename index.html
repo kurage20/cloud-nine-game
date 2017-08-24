@@ -21,9 +21,14 @@
               <h4 class="modal-title text-center" id="myModalLabel">High Scores</h4>
             </div>
             <div class="modal-body">
-                <p style="padding-left:5px">Score</p> 
-                <p style="padding-left: 40px"> Time</p>
-                <ul class="list-group" id="score-list"></ul>
+                <table class="table" id="score-table">
+                  <tr>
+                    <th>#</th>
+                    <th>Time</th>
+                    <th>Score</th>
+                  </tr>
+
+                </table>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-danger pull-right" onclick="resetScores()" > Reset scores</button>

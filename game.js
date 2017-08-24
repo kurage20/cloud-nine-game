@@ -39,8 +39,8 @@ class Player {
             }
         }, this)
     }
-    jump() {
 
+    jump() {
         if (this.y > this.jumpLimit && !this.jumpingDown && !this.fallingStatus) {
             this.onCloud = false
             this.jumpingStatus = true
@@ -120,7 +120,6 @@ var cloudOneImage = new Image()
 var cloudTwoImage = new Image()
 var cloudThreeImage = new Image()
 
-
 var cloudImages = ["img/cloud1.png", "img/cloud2.png", "img/cloud3.png"]
 var randomCloudImage = function () {
     return cloudImages[Math.floor(Math.random() * cloudImages.length)]
@@ -176,7 +175,6 @@ var render = function () {
 // Update game objects
 var update = function (modifier) {
     if (38 in keysDown) {
-
         if (!player.jumpingStatus && !disableMovement && !player.fallingStatus) {
             jumping = setInterval(function () {
                 player.jump()
@@ -202,11 +200,10 @@ var update = function (modifier) {
     if (timer <= 0 || player.y - player.height > height) {
         resetGame()
     }
-    gameCalc()
-
+    gameLogic()
 };
 
-function gameCalc() {
+function gameLogic() {
     //Handle looping clouds
     clouds.forEach(function (cloud) {
         if (!player.jumpingDown && player.jumpingStatus && !player.onCloud && player.y > 400) {
@@ -264,9 +261,7 @@ function gameCalc() {
     }
 
 }
-
 function resetGame() {
-
     submitScores()
     $('#myModal').modal('toggle');
     timer = 60
@@ -316,9 +311,12 @@ function submitScores() {
         return b.score - a.score
     })
 
-    $("#score-list").empty()
+    $("#score-table tr").remove();
+    $("#score-table").append("<tr>" + "<th>" + "#" + "</th>" + "<th>" + "Time" + "</th>" + "<th>" + "Score" + "</th>" + "</tr>")
+    
     scores.forEach(function (play) {
-        $("#score-list").append("<li class=list-group-item>" + play.score + " " + play.time + "</li>")
+        play.id = scores.indexOf(play) + 1
+        $("#score-table").append("<tr>" + "<td>"+ play.id + "</td>" +  "<td>" + play.time  + "</td>" + "<td>" + play.score+ "</td>" + "</tr>")
     })
 }
 
@@ -342,7 +340,6 @@ backgroundMusic.play()
 $(document).ready(function () {
     //Load previous scores
     if (localStorage.scores !== undefined) {
-
         var storedScores = JSON.parse(localStorage.getItem("scores"));
         storedScores.forEach(function (score) {
             scores.push(score)
