@@ -46,7 +46,7 @@ class Player {
             this.jumpingStatus = true
             this.y -= 3;
             jumpSound.play()
-            this.speed = 550
+            this.speed = 560
             
             //Bump in cloud
             clouds.forEach(function (cloud) {
@@ -66,12 +66,12 @@ class Player {
             //Fall on cloud when jumping
             clouds.forEach(function (cloud) {
 
-                if ((this.x + 15 < cloud.x + cloud.width) && (this.x + this.width - 15 > cloud.x) && (this.y + this.height > cloud.y - 25) && (this.y + this.height < cloud.y + cloud.height - 25)) {
+                if ((this.x + 15 < cloud.x + cloud.width) && (this.x + this.width - 15 > cloud.x) && (this.y + this.height > cloud.y - 15) && (this.y + this.height < cloud.y + cloud.height - 15))  {
                     if (!cloud.scored) {
                         score++
                         cloud.scored = true
                     }
-                    this.y += 10
+                    console.log("landed")
                     clearInterval(jumping)
                     this.jumpingDown = false;
                     this.jumpingStatus = false
@@ -211,7 +211,7 @@ function gameLogic() {
         } else if (!player.jumpingDown && player.jumpingStatus && !player.onCloud && player.y < 400) {
             cloud.y += 20
         } else if (!player.jumpingDown && player.jumpingStatus && !player.onCloud && player.y < 200) {
-            cloud.y += 22
+            cloud.y += 21
         }
 
         if (cloud.y > height) {
@@ -222,7 +222,7 @@ function gameLogic() {
         }
        
         //Falling from clouds
-        if ((cloud.y - player.y > 100 && cloud.y - player.y < 150) && (player.x > cloud.x + cloud.width - 10 || player.x + player.width < cloud.x + 10) && player.onCloud) {
+        if ((cloud.y - player.y > 100 && cloud.y - player.y < 150) && (player.x > cloud.x + cloud.width - 15 || player.x + player.width < cloud.x + 15) && player.onCloud) {
             console.log("falling")
             player.onCloud = false
             player.fallingStatus = true
@@ -231,13 +231,11 @@ function gameLogic() {
             })
         }
         //Land on cloud while falling
-        if (player.fallingStatus && (player.x + 15 < cloud.x + cloud.width) && (player.x + player.width - 10 > cloud.x) && (player.y + player.height > cloud.y - 25) && (player.y + player.height < cloud.y + cloud.height - 25)) {
-            player.y+= 10
-            player.jumpingDown = false;
-            player.jumpingStatus = false
+        if (player.fallingStatus && (player.x + 20 < cloud.x + cloud.width) && (player.x + player.width - 20 > cloud.x) && (player.y + player.height > cloud.y - 15) && (player.y + player.height < cloud.y + cloud.height - 15) && !player.jumpDown) {
+            console.log("fall on cloud")
             player.fallingStatus = false
             clearInterval(falling)
-            onCloud = true
+            player.onCloud = true
             player.jumpLimit = player.y - 150
         }
         move(cloud)
