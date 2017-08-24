@@ -5,9 +5,7 @@
 div p {
     display: inline
 }
-body {
-    background-color: rgb(240, 240, 240);
-}
+
 .list-group-item {
     word-spacing: 50px
 }

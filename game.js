@@ -22,7 +22,7 @@ class Player {
         this.height = height
         this.floatSpeed = floatSpeed
 
-        this.jumpLimit = this.y - 150
+        this.jumpLimit = this.y - 125
         this.onCloud = false
         this.jumpingStatus = false
         this.jumpingDown = false
@@ -46,18 +46,18 @@ class Player {
             this.jumpingStatus = true
             this.y -= 3;
             jumpSound.play()
-            this.speed = 450
-            
+            this.speed = 550
+
             clouds.forEach(function (cloud) {
-                if ((this.x + 15 < cloud.x + cloud.width) && (this.x + this.width - 15 > cloud.x) && (this.y - 28 ===  cloud.y)) {
+                if ((this.x + 15 < cloud.x + cloud.width) && (this.x + this.width - 15 > cloud.x) && (this.y - 28 === cloud.y)) {
                     this.y += 3
                     console.log("bumped")
                     this.jumpingDown = true
                 }
-            }, this)  
+            }, this)
 
         } else {
-            this.speed = 325
+            this.speed = 400
 
             if (!this.fallingStatus) {
                 this.jumpingDown = true;
@@ -71,10 +71,10 @@ class Player {
                         score++
                         cloud.scored = true
                     }
+                    clearInterval(jumping)
                     this.jumpingDown = false;
                     this.jumpingStatus = false
                     this.onCloud = true
-                    clearInterval(jumping)
                     this.jumpLimit = this.y - 150
 
                 }
@@ -83,7 +83,6 @@ class Player {
         }
     }
 }
-
 
 class Cloud {
     constructor(x, y, dir, floatSpeed) {
@@ -103,11 +102,11 @@ var randomX = function () {
     return Math.random() * (width - 235)
 }
 
-var cloudOne = new Cloud(randomX(), 200, "left", 2)
-var cloudTwoImage = new Cloud(randomX(), 400, "right", 3)
+var cloudOne = new Cloud(randomX(), 150, "left", 2)
+var cloudTwo = new Cloud(randomX(), 375, "right", 3)
 var cloudThree = new Cloud(randomX(), 600, "left", 4)
 
-clouds.push(cloudOne, cloudTwoImage, cloudThree)
+clouds.push(cloudOne, cloudTwo, cloudThree)
 
 var timerTick = setInterval(function () {
     timer--
@@ -120,6 +119,7 @@ var scoreImage = new Image()
 var cloudOneImage = new Image()
 var cloudTwoImage = new Image()
 var cloudThreeImage = new Image()
+
 
 var cloudImages = ["img/cloud1.png", "img/cloud2.png", "img/cloud3.png"]
 var randomCloudImage = function () {
@@ -164,12 +164,12 @@ var render = function () {
     ctx.textBaseline = "top";
     ctx.fillText(timer, 55, 30);
 
-    ctx.drawImage(scoreImage, 900, 15, 74, 42)
+    ctx.drawImage(scoreImage, 1000, 15, 74, 42)
     ctx.fillStyle = "rgb(250, 250, 250)";
     ctx.font = "25px Atari";
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
-    ctx.fillText(score, 845, 30);
+    ctx.fillText(score, 945, 30);
 
 };
 
@@ -207,10 +207,10 @@ var update = function (modifier) {
 };
 
 function gameCalc() {
-    //Handle game looping clouds
+    //Handle looping clouds
     clouds.forEach(function (cloud) {
         if (!player.jumpingDown && player.jumpingStatus && !player.onCloud && player.y > 400) {
-            cloud.y += 14
+            cloud.y += 16
         } else if (!player.jumpingDown && player.jumpingStatus && !player.onCloud && player.y < 400) {
             cloud.y += 18
         } else if (!player.jumpingDown && player.jumpingStatus && !player.onCloud && player.y < 200) {
@@ -218,14 +218,14 @@ function gameCalc() {
         }
 
         if (cloud.y > height) {
-            cloud.y = cloud.y - height + 200
+            cloud.y = cloud.y - height + 130
             cloud.x = randomX()
             cloud.scored = false
             cloud.floatSpeed += 1
-
+        }
+            /* slide new cloud from top, but it's buggy
+            
             var speed = cloud.floatSpeed
-
-            /*
             var slideCloud = setInterval(function() {
                 if(cloud.y < 200) {
                     cloud.y += 12
@@ -235,7 +235,7 @@ function gameCalc() {
                 
             }, 10)
             */
-        }
+       
         //Falling from clouds
         if ((cloud.y - player.y > 100 && cloud.y - player.y < 150) && (player.x > cloud.x + cloud.width - 10 || player.x + player.width < cloud.x + 10) && player.onCloud) {
             console.log("falling")
@@ -254,9 +254,15 @@ function gameCalc() {
             onCloud = true
             player.jumpLimit = player.y - 150
         }
-
         move(cloud)
     })
+
+    if (player.x > width) {
+        player.x = 0 - player.width;
+    } else if (player.x < 0 - player.width) {
+        player.x = width;
+    }
+
 }
 
 function resetGame() {
@@ -268,12 +274,12 @@ function resetGame() {
 
     player = new Player(width / 2, 700, 325, 80, 100, 2)
 
-    var cloudOne = new Cloud(randomX(), 600, "left", 2)
-    var cloudTwoImage = new Cloud(randomX(), 200, "right", 2.5)
-    var cloudThree = new Cloud(randomX(), 400, "left", 3)
+    var cloudOne = new Cloud(randomX(), 150, "left", 2)
+    var cloudTwo = new Cloud(randomX(), 375, "right", 3)
+    var cloudThree = new Cloud(randomX(), 600, "left", 4)
 
     clouds = []
-    clouds.push(cloudOne, cloudTwoImage, cloudThree)
+    clouds.push(cloudOne, cloudTwo, cloudThree)
 
     cloudOneImage.src = randomCloudImage()
     cloudTwoImage.src = randomCloudImage()
@@ -287,7 +293,7 @@ function resetGame() {
 //Move horizontally cloud or player
 function move(object) {
     object.dir === "right" ? object.x += object.floatSpeed : object.x -= object.floatSpeed
-    if (object.x > 775) {
+    if (object.x > 825) {
         object.dir = "left"
     } else if (object.x < 25) {
         object.dir = "right"
@@ -297,12 +303,12 @@ function move(object) {
 function submitScores() {
     if (score > 0) {
         var obj = {}
-        var date = new Date()
-        var time = date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
-    
+        var d = new Date()
+        var time = (d.getHours() < 10 ? '0' : '') + d.getHours() + ":" + (d.getMinutes() < 10 ? '0' : '') + d.getMinutes() + ":" + d.getSeconds()
+
         obj.time = time
         obj.score = score
-        
+
         scores.push(obj)
     }
 
@@ -312,7 +318,7 @@ function submitScores() {
 
     $("#score-list").empty()
     scores.forEach(function (play) {
-        $("#score-list").append("<li class=list-group-item>" + play.score  + " " + play.time + "</li>")
+        $("#score-list").append("<li class=list-group-item>" + play.score + " " + play.time + "</li>")
     })
 }
 
@@ -327,25 +333,19 @@ var jumpSound = document.createElement("audio")
 jumpSound.src = "sound/jump.mp3"
 jumpSound.volume = 0.3
 
-/*
 var backgroundMusic = document.createElement("audio")
 backgroundMusic.volume = 0.2
 backgroundMusic.src = "sound/dustforce.mp3"
-backgroundMusic.play()
 backgroundMusic.loop = true
-*/
-
+backgroundMusic.play()
 
 $(document).ready(function () {
-    //Load scores
+    //Load previous scores
     if (localStorage.scores !== undefined) {
 
         var storedScores = JSON.parse(localStorage.getItem("scores"));
-        storedScores.forEach(function(score) {
+        storedScores.forEach(function (score) {
             scores.push(score)
-        })
-        scores.sort(function (a, b) {
-            return b.score - a.score
         })
     }
 
