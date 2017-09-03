@@ -1,2 +1,2 @@
-controls: ← ↑ →
+controls: ← ↑ →  
 mute/unmute music - S
