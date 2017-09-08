@@ -19,9 +19,9 @@ class Player {
         this.y = y
         this.speed = speed
         
-        this.width = 80
-        this.height = 100
-        this.floatSpeed = 2
+        this.width = 75
+        this.height = 95
+        this.floatSpeed = 3
         this.jumpLimit = this.y - 125
         this.onCloud = false
         this.jumping = false
@@ -50,23 +50,22 @@ class Player {
             
             //Bump in cloud
             clouds.forEach(function (cloud) {
-                if ((this.x + 15 < cloud.x + cloud.width) && (this.x + this.width - 15 > cloud.x) && (this.y + (this.width / 2) > cloud.y)  && (cloud.y - this.y > 20 && cloud.y - this.y < 100)) {
+                if ((this.x + 15 < cloud.x + cloud.width) && (this.x + this.width - 15 > cloud.x) && (this.y + this.width > cloud.y)  && (cloud.y - this.y > 20 && cloud.y - this.y < 100)) {
                     this.jumpingDown = true
                 }
             }, this)
 
         } else {
             //Jumping down
-            this.speed = 375
-
             if (!this.fallingStatus) {
+                this.speed = 375
                 this.jumpingDown = true;
                 this.y += 2;
             }
             //Fall on cloud when jumping
             clouds.forEach(function (cloud) {
 
-                if ((this.x + 15 < cloud.x + cloud.width) && (this.x + this.width - 15 > cloud.x) && (cloud.y - this.y > 90 && cloud.y - this.y < 120))  {
+                if ((this.x + 15 < cloud.x + cloud.width) && (this.x + this.width - 15 > cloud.x) && (cloud.y - this.y > 90 && cloud.y - this.y < 115))  {
                     if (!cloud.scored) {
                         score++
                         cloud.scored = true
@@ -218,8 +217,8 @@ function gameLogic() {
         }
         //Land on cloud while falling
         if (player.fallingStatus && (player.x + 20 < cloud.x + cloud.width) && (player.x + player.width - 20 > cloud.x) && (cloud.y - player.y > 90 && cloud.y - player.y < 120) && !player.jumpDown) {
-            player.fallingStatus = false
             clearInterval(falling)
+            player.fallingStatus = false
             player.onCloud = true
             player.jumpLimit = player.y - 150
         }
@@ -322,15 +321,12 @@ backgroundMusic.play()
 
 $(document).ready(function () {
     //Load previous scores
-    if (localStorage.scores !== undefined) {
+    if (!!localStorage.scores) {
         var storedScores = JSON.parse(localStorage.getItem("scores"));
         storedScores.forEach(function (score) {
             scores.push(score)
         })
     }
-
-    $("#play-again").click(resetGame)
-
     //Disable movement when modal is open
     $('#myModal').on('hide.bs.modal show.bs.modal', function () {
         disableMovement = !disableMovement
