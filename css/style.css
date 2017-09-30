@@ -1,0 +1,15 @@
+@font-face {
+    font-family: "Atari";
+    src: url(font/atarifull.ttf);
+}
+body {
+	background-color: black;
+}
+#canvas {
+    position: fixed; 
+    left: 0px; 
+    top: 0px; 
+    right:0px; 
+    margin:auto;
+    height: 100%
+}
